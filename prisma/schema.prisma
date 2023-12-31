@@ -1,0 +1,93 @@
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Basic Schema for Members and Servers Created
+
+// User model
+model Profile {
+  id String @id @default(uuid())
+  userId String @unique
+  name String
+  email String @db.Text
+  imageUrl String @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // back-relations
+  servers Server[]
+  members Member[]
+  channels Channel[]
+
+}
+
+model Server {
+  id String @id @default(uuid())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  imageUrl String @db.Text
+  inviteUrl String @db.Text
+
+  profileId String
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // back-relations
+  serverMembers Member[]
+  channels Channel[]
+  @@index([profileId])
+}
+
+enum memberRole {
+  ADMIN
+  MODERATOR
+  GUEST
+}
+
+model Member {
+  id String @id @default(uuid())
+  role memberRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profileId String
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([serverId])
+
+}
+
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+model Channel {
+  id String @id @default(uuid())
+  name String
+  type ChannelType @default(TEXT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // relation with profile
+  profileId String
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  // relaion with server
+  serverId String
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId])
+  @@index([profileId])
+}
