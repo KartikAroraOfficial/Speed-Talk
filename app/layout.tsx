@@ -3,6 +3,11 @@ import { Open_Sans } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ModalProvider } from '@/components/providers/modal-provider'
+import { SocketProvider } from '@/components/providers/socket-provider'
+import { QueryProvider } from '@/components/providers/query-provider'
+
+
 import { cn } from "@/lib/utils";
 
 const font = Open_Sans({ subsets: ["latin"] });
@@ -20,17 +25,24 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={cn(font.className, "bg-gray-300 dark:bg-[#313338]")}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem={true}
-          disableTransitionOnChange={false}
-          storageKey="next-theme"
-        >
-            {children}
-        </ThemeProvider>
-          </body>
+        <body className={cn(
+          font.className,
+          "bg-[#d1cbcb] dark:bg-[#313338]"
+        )}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            storageKey="speed-talk-theme"
+          >
+            <SocketProvider>
+              <ModalProvider />
+              <QueryProvider>
+                {children}
+              </QueryProvider>
+            </SocketProvider>
+          </ThemeProvider>
+        </body>
       </html>
     </ClerkProvider>
   );

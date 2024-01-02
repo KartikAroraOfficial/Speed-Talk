@@ -10,6 +10,8 @@ generator client {
 
 // Basic Schema for Members and Servers Created
 
+// Created full schema for the project
+
 // User model
 model Profile {
   id String @id @default(uuid())
@@ -33,18 +35,18 @@ model Server {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   imageUrl String @db.Text
-  inviteUrl String @db.Text
+  inviteCode String @db.Text
 
   profileId String
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
   // back-relations
-  serverMembers Member[]
+  members Member[]
   channels Channel[]
   @@index([profileId])
 }
 
-enum memberRole {
+enum MemberRole {
   ADMIN
   MODERATOR
   GUEST
@@ -52,15 +54,22 @@ enum memberRole {
 
 model Member {
   id String @id @default(uuid())
-  role memberRole
+  role MemberRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   profileId String
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
+  conversationsInitiated Conversation[] @relation("MemberOne")
+  conversationsReceived Conversation[] @relation("MemberTwo")
+  
   serverId String
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  // back-relations
+  messages Message[]
+  directMessages DirectMessage[]
 
   @@index([profileId])
   @@index([serverId])
@@ -88,6 +97,67 @@ model Channel {
   serverId String
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
+  // back-relations
+  messages Message[]
+
   @@index([serverId])
   @@index([profileId])
+}
+
+model DirectMessage {
+  id String @id @default(uuid())
+  content String @db.Text
+  fileUrl String? @db.Text
+
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  conversationId String
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([conversationId])
+}
+
+model Message {
+  id String @id @default(uuid())
+  content String @db.Text
+
+  fileUrl String? @db.Text
+
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channelId String
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channelId])
+  @@index([memberId])
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  memberOneId String
+  memberOne Member @relation("MemberOne", fields: [memberOneId], references: [id], onDelete: Cascade)
+
+  memberTwoId String
+  memberTwo Member @relation("MemberTwo", fields: [memberTwoId], references: [id], onDelete: Cascade)
+
+  // back-relations  
+  directMessages DirectMessage[]
+
+  @@index([memberTwoId])
+
+  @@unique([memberOneId, memberTwoId])
 }
