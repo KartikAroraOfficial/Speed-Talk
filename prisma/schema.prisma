@@ -8,41 +8,36 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Basic Schema for Members and Servers Created
-
-// Created full schema for the project
-
-// User model
 model Profile {
   id String @id @default(uuid())
   userId String @unique
   name String
-  email String @db.Text
   imageUrl String @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // back-relations
+  email String @db.Text
+
   servers Server[]
   members Member[]
   channels Channel[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Server {
   id String @id @default(uuid())
   name String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   imageUrl String @db.Text
-  inviteCode String @db.Text
+  inviteCode String @unique
 
   profileId String
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  
-  // back-relations
+
   members Member[]
   channels Channel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
 }
 
@@ -54,26 +49,25 @@ enum MemberRole {
 
 model Member {
   id String @id @default(uuid())
-  role MemberRole
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role MemberRole @default(GUEST)
 
   profileId String
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  conversationsInitiated Conversation[] @relation("MemberOne")
-  conversationsReceived Conversation[] @relation("MemberTwo")
-  
   serverId String
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  // back-relations
   messages Message[]
   directMessages DirectMessage[]
 
+  conversationsInitiated Conversation[] @relation("MemberOne")
+  conversationsReceived Conversation[] @relation("MemberTwo")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
   @@index([serverId])
-
 }
 
 enum ChannelType {
@@ -86,22 +80,20 @@ model Channel {
   id String @id @default(uuid())
   name String
   type ChannelType @default(TEXT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  // relation with profile
   profileId String
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  // relaion with server
   serverId String
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  // back-relations
   messages Message[]
 
-  @@index([serverId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([profileId])
+  @@index([serverId])
 }
 
 model DirectMessage {
