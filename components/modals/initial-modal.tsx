@@ -5,6 +5,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { SignOutButton } from "@clerk/nextjs";
 
 import {
   Dialog,
@@ -126,7 +127,10 @@ export const InitialModal = () => {
                 )}
               />
             </div>
-            <DialogFooter className="bg-gray-100 px-6 py-4">
+            <DialogFooter className=" bg-gray-100 px-6 py-4">
+              <DialogDescription className="flex justify-start items-center w-full text-zinc-500 lg:pt-0 sm:p-2 pt-3 px-1">
+                <span className="justify-self-start font-bold">Hmm,&nbsp;</span> Wrong Account? <div className="sm:pt-0 px-2 text-indigo-500 h-auto w-auto hover:text-red-500/90"><SignOutButton /></div>
+              </DialogDescription>
               <Button variant="primary" disabled={isLoading}>
                 Create
               </Button>
